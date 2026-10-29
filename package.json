@@ -1,0 +1,8 @@
+{
+  "name": "idynamic-highway-multiplayer",
+  "version": "1.0.0",
+  "description": "Relay server for Highway 3D live races (no dependencies).",
+  "type": "module",
+  "engines": { "node": ">=18" },
+  "scripts": { "start": "node server.mjs" }
+}
