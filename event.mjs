@@ -15,6 +15,9 @@ export const eventConfig = {
   finalists: 16,
   // EVENT_TEST=1 keeps the qualifiers open whatever the dates (testing).
   alwaysOpen: env.EVENT_TEST === '1',
+  // The prize event is called off (replaced by the free monthly cup): no sign-up, no qualifying run.
+  // EVENT_CANCELLED=0 turns it back on.
+  cancelled: env.EVENT_CANCELLED !== '0',
 }
 const adminKey = env.ADMIN_KEY || ''
 
@@ -118,6 +121,7 @@ export const storageKind = env.UPSTASH_REDIS_REST_URL ? 'upstash' : 'memory (tes
 const runs = new Map()
 
 export function qualifOpen(now = Date.now()) {
+  if (eventConfig.cancelled) return false
   return eventConfig.alwaysOpen || (now >= Date.parse(eventConfig.qualifStart) && now < Date.parse(eventConfig.qualifEnd))
 }
 
@@ -143,6 +147,7 @@ export async function eventRoute(method, path, query, body) {
     return [200, { top: await publicBoard(Math.min(Number(query.get('count')) || 50, 100)), registered: await store.count() }]
   }
   if (method === 'POST' && path === '/event/register') {
+    if (eventConfig.cancelled) return [410, { error: 'Le Grand Prix est annulé : il est remplacé par la Coupe des Panneaux, gratuite.' }]
     const pseudo = String(body.pseudo ?? '').replace(/[^\p{L}\p{N} _\-.]/gu, '').trim().slice(0, 14)
     const email = String(body.email ?? '').trim().toLowerCase()
     const birthYear = Number(body.birthYear)
